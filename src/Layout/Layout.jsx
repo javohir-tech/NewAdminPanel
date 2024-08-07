@@ -27,7 +27,7 @@ const Home = () => {
             {
               key: '1',
               icon: <UserOutlined />,
-              label: <Link to="/layout/categories">Salom</Link>,
+              label: <Link to="/layout/categories">Categories</Link>,
             },
             {
               key: '2',
@@ -41,7 +41,7 @@ const Home = () => {
             },
           ]}
         />
-      </Sider>
+    </Sider>
       <Layout>
         <Header
           style={{
