@@ -208,7 +208,7 @@ const Categories = () => {
         {
             title: 'Name(Ru)',
             dataIndex: 'name_ru',
-            key: 'name_en',
+            key: 'name_ru',
             width: '30%',
             ...getColumnSearchProps('name_ru'),
         },
