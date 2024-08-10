@@ -30,8 +30,8 @@ const Categories = () => {
     const [art, setArt] = useState();
 
     // yangila
-    const newInputs = () =>{
-       
+    const newInputs = () => {
+
         setArt(null);
         setName_en('');
         setName_ru('')
@@ -55,26 +55,97 @@ const Categories = () => {
             .then((response) => {
                 if (response.success === true) {
                     getData()
-                   message.success(response.message)
-                   setIsModalOpen(false)
-                //    newInputs()
-                setArt(null);
-                setName_en('');
-                setName_ru('')
+                    message.success(response.message)
+                    setIsModalOpen(false)
+                    //    newInputs()
+                    setArt(null);
+                    setName_en('');
+                    setName_ru('')
                 }
                 else {
                     message.error(response.message)
                 }
             })
-            .catch((error)=>{
+            .catch((error) => {
                 message.error(error.message)
             })
     }
 
+    // put method
+
+    const [editNameEn, setEditNameEn] = useState();
+    const [editNameRu, setEditNameRu] = useState();
+    const [editArt, setEditArt] = useState();
+    const [editId, setEditId] = useState();
+    const getDataEdit = data?.filter((item) => item.id === editId);
+
+    const editCategory = (e) => {
+        e.preventDefault()
+        const formData = new FormData();
+        formData.append("name_en", editNameEn);
+        formData.append("name_ru", editNameRu);
+        formData.append("images", editArt);
+        fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/categories/${editId}`,{
+            method: 'PUT',
+            headers:{
+                'Authorization': `Bearer ${localStorage.getItem('tokenjon')}`
+            },
+            body: formData
+        })
+        .then((res) => res.json())
+        .then((response) => {
+            if(response.success===true){
+                getData()
+                message.success(response.message)
+               setIsModalOpen(false)
+            }
+            else{
+                message.error(response.message)
+            }
+        })
+        .catch((error)=>{
+            message.error(error.message)
+        })
+    }
+
+    // delete method
+
+    const [deleteId, setDeleteId] = useState();
+    const deleteCategory = () => {
+      
+        fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/categories/${deleteId}`,{
+            method: 'DELETE',
+            headers:{
+                'Authorization': `Bearer ${localStorage.getItem('tokenjon')}`
+            }
+        })
+        .then((res)=>res.json())
+        .then((response)=>{
+            if(response.success===true){
+                getData()
+                message.success(response.message)
+            }
+            else{
+                message.error(response.message)
+            }
+        })
+        .catch((error)=>{
+            message.error(error.message)
+        })
+    }
+
+    const handleDelete = (id) => {
+        setDeleteId(id);
+        deleteCategory()
+    }
+
     // modal  js
+    const [isEditing, setIsEditing] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const showModal = () => {
+    const showModal = (editing = false, id) => {
+        setEditId(id);
         setIsModalOpen(true);
+        setIsEditing(editing);
     };
     const handleOk = () => {
         setIsModalOpen(false);
@@ -221,7 +292,7 @@ const Categories = () => {
         },
         {
             title:
-                <Button type="primary" onClick={showModal}>
+                <Button type="primary" onClick={() => showModal(false)}>
                     Add Categories
                 </Button>,
             render: (_, record) => (
@@ -231,10 +302,11 @@ const Categories = () => {
                         description="Bu vazifani o'chirishni xohlaysizmi?"
                         okText="Ha"
                         cancelText="Yo'q"
+                        onConfirm={() => handleDelete(record.id)}
                     >
                         <Button danger type="primary"><DeleteOutlined /></Button>
                     </Popconfirm>
-                    <Button type="primary"><EditOutlined /></Button>
+                    <Button type="primary" onClick={() => showModal(true, record.id)}><EditOutlined /></Button>
                 </Space>
             ),
             key: 'action'
@@ -246,52 +318,105 @@ const Categories = () => {
         <>
             <Table columns={columns} pagination={{ pageSize: 4 }} dataSource={data} />
             <Modal title="Basic Modal" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
-                <Form
-                    labelCol={{
-                        span: 4,
-                    }}
-                    wrapperCol={{
-                        span: 14,
-                    }}
-                    layout="horizontal"
-                    style={{
-                        maxWidth: 600,
-                    }}
-                >
-                    <Form.Item label="Name(En)">
-                        <Input value={name_en} onChange={(e) => setName_en(e?.target?.value)} />
-                    </Form.Item>
-                    <Form.Item label="Name(Ru)">
-                        <Input value={name_ru} onChange={(e) => setName_ru(e?.target?.value)} />
-                    </Form.Item>
-                    <Form.Item label="Upload" valuePropName="fileList" getValueFromEvent={normFile}>
-                        <Upload action="/upload.do" listType="picture-card"
-                            beforeUpload={(file) => {
-                                setArt(file);
-                                // Mavjud fayllarni tozalash
-                                return false;
+                {
+                    isEditing
+                        ?
+                        <Form
+                            labelCol={{
+                                span: 4,
                             }}
-                            onChange={(e) => setArt(e?.fileList[0]?.originFileObj)}>
-                            <button
-                                style={{
-                                    border: 0,
-                                    background: 'none',
-                                }}
-                                type="button"
-                            >
-                                <PlusOutlined />
-                                <div
-                                    style={{
-                                        marginTop: 8,
+                            wrapperCol={{
+                                span: 14,
+                            }}
+                            layout="horizontal"
+                            style={{
+                                maxWidth: 600,
+                            }}
+                        >
+                            <h1>Edit Categories</h1>
+                            <Form.Item label="Name(En)">
+                                <Input value={name_en} onChange={(e) => setEditNameEn(e?.target?.value)} />
+                            </Form.Item>
+                            <Form.Item label="Name(Ru)">
+                                <Input value={name_ru} onChange={(e) => setEditNameRu(e?.target?.value)} />
+                            </Form.Item>
+                            <Form.Item label="Upload" valuePropName="fileList" getValueFromEvent={normFile}>
+                                <Upload action="/upload.do" listType="picture-card"
+                                    beforeUpload={(file) => {
+                                        setEditArt(file);
+                                        // Mavjud fayllarni tozalash
+                                        return false;
                                     }}
-                                >
-                                    Upload
-                                </div>
-                            </button>
-                        </Upload>
-                    </Form.Item>
-                    <Button onClick={addCategory}>Submit</Button>
-                </Form>
+                                    onChange={(e) => setArt(e?.fileList[0]?.originFileObj)}>
+                                    <button
+                                        style={{
+                                            border: 0,
+                                            background: 'none',
+                                        }}
+                                        type="button"
+                                    >
+                                        <PlusOutlined />
+                                        <div
+                                            style={{
+                                                marginTop: 8,
+                                            }}
+                                        >
+                                            Upload
+                                        </div>
+                                    </button>
+                                </Upload>
+                            </Form.Item>
+                            <Button onClick={editCategory}>Submit</Button>
+                        </Form>
+                        :
+                        <Form
+                            labelCol={{
+                                span: 4,
+                            }}
+                            wrapperCol={{
+                                span: 14,
+                            }}
+                            layout="horizontal"
+                            style={{
+                                maxWidth: 600,
+                            }}
+                        >
+                            <h1>Add Categories</h1>
+                            <Form.Item label="Name(En)">
+                                <Input value={name_en} onChange={(e) => setName_en(e?.target?.value)} />
+                            </Form.Item>
+                            <Form.Item label="Name(Ru)">
+                                <Input value={name_ru} onChange={(e) => setName_ru(e?.target?.value)} />
+                            </Form.Item>
+                            <Form.Item label="Upload" valuePropName="fileList" getValueFromEvent={normFile}>
+                                <Upload action="/upload.do" listType="picture-card"
+                                    beforeUpload={(file) => {
+                                        setArt(file);
+                                        // Mavjud fayllarni tozalash
+                                        return false;
+                                    }}
+                                    onChange={(e) => setArt(e?.fileList[0]?.originFileObj)}>
+                                    <button
+                                        style={{
+                                            border: 0,
+                                            background: 'none',
+                                        }}
+                                        type="button"
+                                    >
+                                        <PlusOutlined />
+                                        <div
+                                            style={{
+                                                marginTop: 8,
+                                            }}
+                                        >
+                                            Upload
+                                        </div>
+                                    </button>
+                                </Upload>
+                            </Form.Item>
+                            <Button onClick={addCategory}>Submit</Button>
+                        </Form>
+                }
             </Modal>
         </>
 
