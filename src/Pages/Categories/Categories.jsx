@@ -82,56 +82,73 @@ const Categories = () => {
     const editCategory = (e) => {
         e.preventDefault()
         const formData = new FormData();
-        formData.append("name_en", editNameEn);
-        formData.append("name_ru", editNameRu);
-        formData.append("images", editArt);
-        fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/categories/${editId}`,{
+
+        if (editNameEn) {
+            formData.append("name_en", editNameEn);
+        } else {
+            formData.append("name_en", getDataEdit[0].name_en);
+        }
+
+        // Name(Ru) faqat qiymat o'zgartirilgan bo'lsa qo'shiladi
+        if (editNameRu) {
+            formData.append("name_ru", editNameRu);
+        } else {
+            formData.append("name_ru", getDataEdit[0].name_ru);
+        }
+
+        // Image faqat qiymat o'zgartirilgan bo'lsa qo'shiladi
+        if (editArt) {
+            formData.append("images", editArt);
+        } else {
+            formData.append("images", getDataEdit[0].image_src);
+        }
+        fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/categories/${editId}`, {
             method: 'PUT',
-            headers:{
+            headers: {
                 'Authorization': `Bearer ${localStorage.getItem('tokenjon')}`
             },
             body: formData
         })
-        .then((res) => res.json())
-        .then((response) => {
-            if(response.success===true){
-                getData()
-                message.success(response.message)
-               setIsModalOpen(false)
-            }
-            else{
-                message.error(response.message)
-            }
-        })
-        .catch((error)=>{
-            message.error(error.message)
-        })
+            .then((res) => res.json())
+            .then((response) => {
+                if (response.success === true) {
+                    getData()
+                    message.success(response.message)
+                    setIsModalOpen(false)
+                }
+                else {
+                    message.error(response.message)
+                }
+            })
+            .catch((error) => {
+                message.error(error.message)
+            })
     }
 
     // delete method
 
     const [deleteId, setDeleteId] = useState();
     const deleteCategory = () => {
-      
-        fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/categories/${deleteId}`,{
+
+        fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/categories/${deleteId}`, {
             method: 'DELETE',
-            headers:{
+            headers: {
                 'Authorization': `Bearer ${localStorage.getItem('tokenjon')}`
             }
         })
-        .then((res)=>res.json())
-        .then((response)=>{
-            if(response.success===true){
-                getData()
-                message.success(response.message)
-            }
-            else{
-                message.error(response.message)
-            }
-        })
-        .catch((error)=>{
-            message.error(error.message)
-        })
+            .then((res) => res.json())
+            .then((response) => {
+                if (response.success === true) {
+                    getData()
+                    message.success(response.message)
+                }
+                else {
+                    message.error(response.message)
+                }
+            })
+            .catch((error) => {
+                message.error(error.message)
+            })
     }
 
     const handleDelete = (id) => {
@@ -143,9 +160,22 @@ const Categories = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const showModal = (editing = false, id) => {
+        if (!editing) {
+            setEditNameEn('');
+            setEditNameRu('');
+            setEditArt(null);
+        } else {
+            const selectedItem = data.find((item) => item.id === id);
+            if (selectedItem) {
+                setEditNameEn(selectedItem.name_en);
+                setEditNameRu(selectedItem.name_ru);
+                setEditArt(selectedItem.image_src);
+            }
+        }
         setEditId(id);
         setIsModalOpen(true);
         setIsEditing(editing);
+
     };
     const handleOk = () => {
         setIsModalOpen(false);
@@ -335,10 +365,10 @@ const Categories = () => {
                         >
                             <h1>Edit Categories</h1>
                             <Form.Item label="Name(En)">
-                                <Input value={name_en} onChange={(e) => setEditNameEn(e?.target?.value)} />
+                                <Input value={editNameEn} onChange={(e) => setEditNameEn(e?.target?.value)} defaultValue={getDataEdit[0].name_en} />
                             </Form.Item>
                             <Form.Item label="Name(Ru)">
-                                <Input value={name_ru} onChange={(e) => setEditNameRu(e?.target?.value)} />
+                                <Input value={editNameRu} onChange={(e) => setEditNameRu(e?.target?.value)} defaultValue={getDataEdit[0].name_ru} />
                             </Form.Item>
                             <Form.Item label="Upload" valuePropName="fileList" getValueFromEvent={normFile}>
                                 <Upload action="/upload.do" listType="picture-card"
@@ -383,13 +413,13 @@ const Categories = () => {
                         >
                             <h1>Add Categories</h1>
                             <Form.Item label="Name(En)">
-                                <Input value={name_en} onChange={(e) => setName_en(e?.target?.value)} />
+                                <Input value={name_en} onChange={(e) => setName_en(e?.target?.value)} required/>
                             </Form.Item>
                             <Form.Item label="Name(Ru)">
-                                <Input value={name_ru} onChange={(e) => setName_ru(e?.target?.value)} />
+                                <Input value={name_ru} onChange={(e) => setName_ru(e?.target?.value)} required/>
                             </Form.Item>
                             <Form.Item label="Upload" valuePropName="fileList" getValueFromEvent={normFile}>
-                                <Upload action="/upload.do" listType="picture-card"
+                                <Upload action="/upload.do" listType="picture-card" required
                                     beforeUpload={(file) => {
                                         setArt(file);
                                         // Mavjud fayllarni tozalash

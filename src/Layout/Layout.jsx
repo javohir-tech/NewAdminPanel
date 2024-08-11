@@ -32,7 +32,7 @@ const Home = () => {
             {
               key: '2',
               icon: <VideoCameraOutlined />,
-              label: 'nav 2',
+              label: <Link to={"/layout/cities"}>Cities</Link>,
             },
             {
               key: '3',
