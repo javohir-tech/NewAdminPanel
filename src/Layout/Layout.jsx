@@ -9,6 +9,7 @@ import {
 import { Button, Layout, Menu, theme } from 'antd';
 import { Outlet } from 'react-router';
 import { Link } from 'react-router-dom';
+import Brands from '../Pages/Brands/Brands';
 const { Header, Sider, Content } = Layout;
 const Home = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -37,7 +38,7 @@ const Home = () => {
             {
               key: '3',
               icon: <UploadOutlined />,
-              label: 'nav 3',
+              label: <Link  to={"/layout/brands"}>Brands</Link>,
             },
           ]}
         />

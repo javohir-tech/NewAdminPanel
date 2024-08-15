@@ -1,19 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Form, Image, Input, message, Modal, Popconfirm, Space, Table, Upload } from 'antd';
+import { Button, Form, Input, message, Modal, Space, Table, Upload } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { render } from 'react-dom';
 
-export default function Cities() {
-    const token = localStorage.getItem('tokenjon')
-    const Url = 'https://autoapi.dezinfeksiyatashkent.uz/api/cities'
-
-    //get ethod
-    const [data, setData] = useState([])
+const Brands = () => {
+    const brandsUrl = 'https://autoapi.dezinfeksiyatashkent.uz/api/brands'
+    const token = localStorage.getItem("tokenjon")
+    // get method
+    const [data, setData] = useState([]);
     const getData = () => {
-        fetch(Url)
+        fetch(brandsUrl)
             .then((res) => res.json())
             .then((response) => {
+                // console.log(response.data);
+
                 const modifiedData = response.data.map((item, index) => ({
                     ...item,
                     key: item.id || index
@@ -21,25 +22,21 @@ export default function Cities() {
                 setData(modifiedData)
             })
     }
-
     useEffect(() => {
         getData()
     }, [])
 
-    //post method
-    const [name, setName] = useState('')
-    const [text, setText] = useState('')
-    const [img, setImg] = useState(null)
+    // post method
+    const [name, setName] = useState('');
+    const [image, setImage] = useState(null);
 
-    const addCities = (e) => {
-        e.preventDefault()
+    const addBrands = (e) => {
+        e.preventDefault();
 
         const formData = new FormData();
-        formData.append("name", name),
-            formData.append("text", text),
-            formData.append("images", img)
-
-        fetch(Url, {
+        formData.append("title", name)
+        formData.append("images", image)
+        fetch(brandsUrl, {
             method: 'POST',
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -51,107 +48,28 @@ export default function Cities() {
                 if (response.success === true) {
                     getData()
                     message.success(response.message)
-                    setIsModalOpen(false)
+                    setImage(null)
                     setName('')
-                    setText('')
-                    setImg(null)
-                }
-                else {
-                    message.error(response.message)
-                }
-            })
-            .catch((error) => message.error(error.message))
-    }
-
-    // put (update) method
-    const [editMode, setEditMode] = useState(false)
-
-    const [id, setId] = useState('')
-    const [nameEdit, setNameEdit] = useState('')
-    const [textEdit, setTextEdit] = useState('')
-    const [imgEdit, setImgEdit] = useState(null)
-
-    const editCities = (e) => {
-        e.preventDefault();
-
-        const formData = new FormData();
-        formData.append("name", nameEdit)
-        formData.append("text", textEdit);
-        formData.append("images", imgEdit);
-
-        fetch(`${Url}/${id}`, {
-            method: 'PUT',
-            headers: {
-                "Authorization": `Bearer ${token}`
-            },
-            body: formData
-        })
-            .then((res) => res.json())
-            .then((response) => {
-                if (response.success === true) {
-                    getData()
-                    message.success(response.message)
                     setIsModalOpen(false)
-                }
-                else {
+                } else {
                     message.error(response.message)
                 }
             })
-            .catch((error) => message.error(error.message))
-    }
-    
-    //delete method
-    const deleteMethod = (id) =>{
-        fetch(`${Url}/${id}`,{
-            method:'DELETE',
-            headers:{
-                "Authorization":`Bearer ${token}`
-            }
-        })
-        .then((res)=>res.json())
-        .then((response)=>{
-            if(response.success){
-                getData();
-                message.success(response.message)
-            }
-            else{
-                message.error(response.message)
-            }
-        })
+            .catch((error) => message.error(error, "xatolik yuz berdi "))
     }
 
-    // modal js
+    //modal js
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const showModal = (editing = false, record = {}) => {
-        if (!editing) {
-            setEditMode(true)
-            setId(record.id)
-            setNameEdit(record.name)
-            setTextEdit(record.text)
-            setImgEdit(record.image_src)
-        } else {
-            setEditMode(false)
-            setName('')
-            setText('')
-            setImg(null)
-        }
+    const showModal = () => {
         setIsModalOpen(true);
     };
     const handleOk = () => {
         setIsModalOpen(false);
+        addBrands();
     };
     const handleCancel = () => {
         setIsModalOpen(false);
-        setEditMode(false); // Tahrirlash rejimini tozalash
-        // Formani tozalash
-        setName('');
-        setText('');
-        setImg(null);
-        setNameEdit('');
-        setTextEdit('');
-        setImgEdit(null);
     };
-
 
     //upload js
     const normFile = (e) => {
@@ -161,7 +79,6 @@ export default function Cities() {
         return e?.fileList;
     };
 
-    // table search
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
     const searchInput = useRef(null);
@@ -224,7 +141,7 @@ export default function Cities() {
                             setSearchText(selectedKeys[0]);
                             setSearchedColumn(dataIndex);
                         }}
-                    >  
+                    >
                         Filter
                     </Button>
                     <Button
@@ -268,74 +185,46 @@ export default function Cities() {
                 text
             ),
     });
-
-    // /table search
-
     const columns = [
         {
             title: 'Name',
-            dataIndex: 'name',
-            key: 'name',
+            dataIndex: 'title',
+            key: 'title',
             width: '30%',
-            ...getColumnSearchProps('name'),
-        },
-        {
-            title: 'Text',
-            dataIndex: 'text',
-            key: 'text',
-            width: '20%',
-            ...getColumnSearchProps('text'),
+            ...getColumnSearchProps('title'),
         },
         {
             title: 'Image',
             dataIndex: 'image_src',
-            key: 'image_src',
-            width: '20%',
-            render: (text) => <Image src={`https://autoapi.dezinfeksiyatashkent.uz/api/uploads/images/${text}`} alt="cities img " width={100} height={100} />
+            key: 'image_rsc',
+            render: (text) => <img src={`https://autoapi.dezinfeksiyatashkent.uz/api/uploads/images/${text}`} width={100} height={100} alt='img' />
         },
         {
-            title: <Button type='primary' onClick={showModal}>Action</Button>,
+            title: <Button type='primary' onClick={showModal}>Add</Button>,
             key: "action",
             render: (_, record) => (
                 <Space size="middle">
-                    <Button type="primary" onClick={() => showModal(false, record)}>Edit</Button>
-                    <Popconfirm
-                        title="Delete the task"
-                        description="Are you sure to delete this task?"
-                        placement="right"
-                        okText="Yes"
-                        onConfirm={()=>deleteMethod(record.id)}
-                        cancelText="No"
-
-                    >
-                        <Button danger type='primary'>Delete</Button>
-                    </Popconfirm>
+                    <Button type='primary' >Edit</Button>
                 </Space>
             )
         }
     ];
-
     return (
         <>
-            <Table columns={columns} pagination={{ pageSize: 5 }} dataSource={data} />
-            <Modal title={editMode ? "Edit Cities" : "Add Cities"} open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
-                <Form onSubmitCapture={editMode ? editCities : addCities}>
-                    <h1>{editMode ? "Edit Cities" : "Add Cities"}</h1>
+            <Table columns={columns} pagination={{ pageSize: 6 }} dataSource={data} />
+            <Modal title="Basic Modal" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
+                <Form>
                     <Form.Item>
-                        <Input value={editMode ? nameEdit : name} placeholder="Name" onChange={(e) => editMode ? setNameEdit(e?.target?.value) : setName(e?.target?.value)} required />
-                    </Form.Item>
-                    <Form.Item>
-                        <Input value={editMode ? textEdit : text} placeholder='text' onChange={(e) => editMode ? setTextEdit(e?.target?.value) : setText(e?.target?.value)} required />
+                        <Input value={name} onChange={(e) => setName(e?.target?.value)} required />
                     </Form.Item>
                     <Form.Item label="Upload" valuePropName="fileList" getValueFromEvent={normFile}>
-                        <Upload valuePropName={editMode ? [{ uid: '-1', name: imgEdit, status: 'done', url: `https://autoapi.dezinfeksiyatashkent.uz/api/uploads/images/${imgEdit}` }] : []}
-                            action="/upload.do" listType="picture-card" required
+                        <Upload valuePropName="fileList" action="/upload.do" listType="picture-card" required
                             beforeUpload={(file) => {
-                                editMode ? setImgEdit(file) : setImg(file)
+                                setImage(file)
                                 return false
                             }
-                            }>
-
+                            }
+                        >
                             <button
                                 style={{
                                     border: 0,
@@ -354,9 +243,10 @@ export default function Cities() {
                             </button>
                         </Upload>
                     </Form.Item>
-                    <Button htmlType='submit' type='primary'>{editMode ? "Save Changes" : "Add"}</Button>
+                    <Button type='primary' onClick={addBrands}>Add</Button>
                 </Form>
             </Modal>
         </>
-    )
-}
+    );
+};
+export default Brands;
